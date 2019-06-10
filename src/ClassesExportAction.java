@@ -43,10 +43,11 @@ public class ClassesExportAction extends AnAction {
             for (int i$ = 0; i$ < len$; i$++) {
                 VirtualFile vf = arr$[i$];
                 String srcName;
-                if (StringUtils.indexOf(vf.toString(), "$") != -1)
+                if (StringUtils.indexOf(vf.toString(), "$") != -1) {
                     srcName = StringUtils.substring(vf.toString(), StringUtils.lastIndexOf(vf.toString(), "/") + 1, StringUtils.indexOf(vf.toString(), "$"));
-                else
+                } else {
                     srcName = StringUtils.substring(vf.toString(), StringUtils.lastIndexOf(vf.toString(), "/") + 1, StringUtils.length(vf.toString()) - 6);
+                }
                 String dstName = StringUtils.substring(sourceName, 0, StringUtils.length(sourceName) - 5);
                 if (StringUtils.equals(srcName, dstName)) {
                     String outRoot = (new StringBuilder()).append(StringUtils.substring(compileRoot, 0, StringUtils.lastIndexOf(compileRoot, "/"))).append("/out").toString();
@@ -55,8 +56,9 @@ public class ClassesExportAction extends AnAction {
                     File t = new File((new StringBuilder()).append(outRoot).append(packagePath).toString());
                     FileUtil.copy(s, t);
                 }
-                if (!ArrayUtils.isEmpty(virtualFile))
+                if (!ArrayUtils.isEmpty(virtualFile)) {
                     getVirtualFile(sourceName, vf.getChildren(), compileRoot);
+                }
             }
 
         }
