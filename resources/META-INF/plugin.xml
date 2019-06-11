@@ -4,33 +4,16 @@
     <version>1.0</version>
     <vendor>LiangDongXing</vendor>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="191.0"/>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-    <!-- uncomment to enable plugin in all products
-    <depends>com.intellij.modules.lang</depends>
-    -->
-
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
     </extensions>
 
     <actions>
-        <!--<group id="MyPlugin.SampleMenu" text="_Sample Menu" description="Sample menu">
-            <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="Myplugin.Textboxes" class="TextBoxes" text="Text _Boxes"
-                    description="A test menu item"/>
-        </group>-->
-
+        <!--    设置 idea Action    -->
         <action id="com.sks.CreatePatcherAction" class="CreatePatcherAction" text="Create _Patcher">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
-
-        <!--<action id="com.sks.ClassesExportAction" class="ClassesExportAction" text="Export _Class">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-        </action>-->
     </actions>
 
 </idea-plugin>

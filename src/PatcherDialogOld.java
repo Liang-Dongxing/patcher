@@ -1,8 +1,6 @@
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.io.FileUtil;
@@ -14,10 +12,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.File;
 
-/**
- * @author MI
- */
-public class PatcherDialog extends JDialog {
+public class PatcherDialogOld extends JDialog {
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -28,27 +23,23 @@ public class PatcherDialog extends JDialog {
     private JPanel filePanel;
     private JTextField webTextField;
     private AnActionEvent event;
-    private JBList<VirtualFile> fieldList;
+    private JBList fieldList;
 
-    PatcherDialog(final AnActionEvent event) {
+    PatcherDialogOld(final AnActionEvent event) {
         this.event = event;
         setTitle("Create Patcher Dialog");
 
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
-        webTextField.setText(event.getData(CommonDataKeys.PROJECT).getName());
-        textField.setText(System.getProperty("user.home") + "\\Desktop");
 
         buttonOK.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 onOK();
             }
         });
 
         buttonCancel.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
@@ -64,7 +55,6 @@ public class PatcherDialog extends JDialog {
 
         // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
@@ -101,9 +91,10 @@ public class PatcherDialog extends JDialog {
 
         try {
             // 模块对象
-            Project data = event.getData(CommonDataKeys.PROJECT);
+            Module module = event.getData(DataKeys.MODULE);
+            CompilerModuleExtension instance = CompilerModuleExtension.getInstance(module);
             // 编译目录
-            String compilerOutputUrl = data.getBasePath();
+            String compilerOutputUrl = instance.getCompilerOutputPath().getPath();
             // JavaWeb项目的WebRoot目录
             String webPath = "/" + webTextField.getText() + "/";
             // 导出目录
@@ -139,7 +130,7 @@ public class PatcherDialog extends JDialog {
 
     private void createUIComponents() {
         VirtualFile[] data = event.getData(DataKeys.VIRTUAL_FILE_ARRAY);
-        fieldList = new JBList<>(data);
+        fieldList = new JBList(data);
         fieldList.setEmptyText("No File Selected!");
         ToolbarDecorator decorator = ToolbarDecorator.createDecorator(fieldList);
         filePanel = decorator.createPanel();
