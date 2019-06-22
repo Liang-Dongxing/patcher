@@ -157,7 +157,10 @@ public class PatcherDialog extends JDialog {
             }
             try {
                 execute(compileContext, modules);
+                Notifications.Bus.notify(new Notification("Patcher", "Patcher", "Export patch successfully", NotificationType.INFORMATION));
             } catch (IOException e) {
+                notification.setContent("Export patch failed");
+                Notifications.Bus.notify(notification);
                 e.printStackTrace();
             }
         });
