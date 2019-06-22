@@ -1,18 +1,19 @@
 <idea-plugin>
-    <id>com.your.company.unique.plugin.id</id>
+    <id>com.ldx.PatcherDialog</id>
     <name>patcher</name>
-    <version>1.0</version>
+    <version>2.0</version>
     <vendor>LiangDongXing</vendor>
 
-    <idea-version since-build="191.0"/>
+    <idea-version since-build="181"/>
 
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
 
     <actions>
         <!--    设置 idea Action    -->
-        <action id="com.sks.CreatePatcherAction" class="CreatePatcherAction" text="Create _Patcher">
+        <action id="ldx.patcher" class="CreatePatcherAction" text="Create Patcher">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <keyboard-shortcut first-keystroke="shift alt E" keymap="$default"/>
         </action>
     </actions>
 
