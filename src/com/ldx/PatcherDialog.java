@@ -71,7 +71,7 @@ public class PatcherDialog extends JDialog {
         savePath.setText(Paths.get(System.getProperty("user.home"), "Desktop").toString());
 
         //设置WEB路径
-        webPath.setTextAndAddToHistory(PropertiesComponent.getInstance().getValue("saveWebPath"));
+        webPath.setTextAndAddToHistory(PropertiesComponent.getInstance().getValue("PatcherSaveWebPath"));
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.length];
@@ -88,7 +88,7 @@ public class PatcherDialog extends JDialog {
     }
 
 
-    PatcherDialog(AnActionEvent event) {
+    public PatcherDialog(AnActionEvent event) {
         // 获取当前Project对象
         project = event.getProject();
         // 获取全部补丁源文件
@@ -139,7 +139,7 @@ public class PatcherDialog extends JDialog {
         // 保存输入的路径
         webPath.setTextAndAddToHistory(webPath.getText());
         // 设置全局保存数据
-        PropertiesComponent.getInstance().setValue("saveWebPath", webPath.getText());
+        PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", webPath.getText());
 
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
@@ -181,9 +181,11 @@ public class PatcherDialog extends JDialog {
                     continue;
                 }
                 //处理类路径下的文件
+                boolean judge = true;
                 for (int j = 0; j < sourceRoots.length; j++) {
                     VirtualFile sourceRoot = sourceRoots[j];
                     if (patcherFile.getPath().contains(sourceRoot.getPath())) {
+                        judge = false;
                         //编辑后的包路径
                         Path packagePath = Paths.get(sourceRoot.getPath()).relativize(Paths.get(patcherFile.getParent().getPath()));
                         //文件名字和文件格式
@@ -211,17 +213,23 @@ public class PatcherDialog extends JDialog {
                         break;
                     }
                 }
-                // 处理非类路径下文件
-                if (patcherFile.getPath().contains(webPath.getText())) {
-                    int webIndex = patcherFile.getPath().lastIndexOf(webPath.getText());
-                    String substring = patcherFile.getPath().substring(webIndex).replace(webPath.getText(), "");
-                    Path saveStaticPath = Paths.get(savePath.getText(), modules[i].getName(), substring);
-                    if (Files.notExists(saveStaticPath)) {
-                        Files.createDirectories(saveStaticPath);
+                Path judgePath = Paths.get(patcherFile.getPath());
+                while (judge) {
+                    if (judgePath.endsWith(Paths.get(webPath.getText()))) {
+                        int webIndex = patcherFile.getPath().lastIndexOf(webPath.getText());
+                        String substring = patcherFile.getPath().substring(webIndex).replace(webPath.getText(), "");
+                        Path saveStaticPath = Paths.get(savePath.getText(), modules[i].getName(), substring);
+                        if (Files.notExists(saveStaticPath)) {
+                            Files.createDirectories(saveStaticPath);
+                        }
+                        Files.copy(Paths.get(patcherFile.getPath()), saveStaticPath, StandardCopyOption.REPLACE_EXISTING);
+                        break;
+                    } else if (!Paths.get(project.getBasePath()).equals(judgePath)) {
+                        judgePath = judgePath.getParent();
+                    } else {
+                        break;
                     }
-                    Files.copy(Paths.get(patcherFile.getPath()), saveStaticPath, StandardCopyOption.REPLACE_EXISTING);
                 }
-
             }
         }
     }
@@ -232,7 +240,7 @@ public class PatcherDialog extends JDialog {
         if (webPath.getHistory().size() == 0) {
             webPath.setTextAndAddToHistory("WebRoot");
             webPath.setTextAndAddToHistory("webapp");
-            PropertiesComponent.getInstance().setValue("saveWebPath", "webapp");
+            PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", "webapp");
         }
     }
 }
