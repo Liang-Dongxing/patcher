@@ -68,7 +68,7 @@ public class PatcherDialog extends JDialog {
         moduleName.setText(StringUtils.join(collect, ";"));
 
         // 设置保存路径
-        savePath.setText(Paths.get(System.getProperty("user.home"), "Desktop").toString());
+        savePath.setText(PropertiesComponent.getInstance().getValue("PatcherSavePath"));
 
         //设置WEB路径
         webPath.setTextAndAddToHistory(PropertiesComponent.getInstance().getValue("PatcherSaveWebPath"));
@@ -140,6 +140,7 @@ public class PatcherDialog extends JDialog {
         webPath.setTextAndAddToHistory(webPath.getText());
         // 设置全局保存数据
         PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", webPath.getText());
+        PropertiesComponent.getInstance().setValue("PatcherSavePath", savePath.getText());
 
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
@@ -241,6 +242,7 @@ public class PatcherDialog extends JDialog {
             webPath.setTextAndAddToHistory("WebRoot");
             webPath.setTextAndAddToHistory("webapp");
             PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", "webapp");
+            PropertiesComponent.getInstance().setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
         }
     }
 }
