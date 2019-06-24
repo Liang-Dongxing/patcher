@@ -88,7 +88,7 @@ public class PatcherDialog extends JDialog {
     }
 
 
-    public PatcherDialog(AnActionEvent event) {
+    PatcherDialog(AnActionEvent event) {
         // 获取当前Project对象
         project = event.getProject();
         // 获取全部补丁源文件
