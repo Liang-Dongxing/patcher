@@ -232,6 +232,7 @@ public class PatcherDialog extends JDialog {
         if (webPath.getHistory().size() == 0) {
             webPath.setTextAndAddToHistory("WebRoot");
             webPath.setTextAndAddToHistory("webapp");
+            PropertiesComponent.getInstance().setValue("saveWebPath", "webapp");
         }
     }
 }
