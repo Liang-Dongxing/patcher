@@ -5,7 +5,8 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -92,7 +93,7 @@ public class PatcherDialog extends JDialog {
         // 获取当前Project对象
         project = event.getProject();
         // 获取全部补丁源文件
-        patcherFiles = event.getData(DataKeys.VIRTUAL_FILE_ARRAY);
+        patcherFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
         // 获取文件的module
         assert patcherFiles != null;
         Set<Module> collect = Arrays.stream(patcherFiles).map(virtualFile -> ModuleUtil.findModuleForFile(virtualFile, project)).collect(Collectors.toSet());
@@ -129,7 +130,7 @@ public class PatcherDialog extends JDialog {
      */
     private void setLocation(AnActionEvent event) {
         // 获取当前程序组件
-        Component component = event.getData(DataKeys.CONTEXT_COMPONENT);
+        Component component = event.getData(PlatformDataKeys.CONTEXT_COMPONENT);
         //获取当前组件窗口信息
         Window componentWindow = SunToolkit.getContainingWindow(component);
         super.setLocationRelativeTo(componentWindow);
