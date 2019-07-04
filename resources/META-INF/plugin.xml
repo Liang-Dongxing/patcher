@@ -7,12 +7,20 @@
         Create Java SE and Java EE project patch files.
     </description>
 
-    <idea-version since-build="181"/>
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="181" until-build="191.*"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.ultimate</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
     </extensions>
 
     <actions>
+        <!-- Add your actions here -->
         <!--    设置 idea Action    -->
         <action id="ldx.patcher" class="com.CreatePatcherAction" text="Create Patcher" description="Create Java SE and Java EE project patch files.">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>

@@ -1,5 +1,7 @@
 package com.ldx;
 
+import com.fasterxml.jackson.databind.ser.impl.StringArraySerializer;
+import com.google.common.base.Strings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -51,6 +53,8 @@ public class PatcherDialog extends JDialog {
     private Project project;
     private VirtualFile[] patcherFiles;
 
+    private PropertiesComponent propertiesComponent;
+
 
     /**
      * 初始化 Pane 内容
@@ -69,10 +73,10 @@ public class PatcherDialog extends JDialog {
         moduleName.setText(StringUtils.join(collect, ";"));
 
         // 设置保存路径
-        savePath.setText(PropertiesComponent.getInstance().getValue("PatcherSavePath"));
+        savePath.setText(propertiesComponent.getValue("PatcherSavePath"));
 
         //设置WEB路径
-        webPath.setTextAndAddToHistory(PropertiesComponent.getInstance().getValue("PatcherSaveWebPath"));
+        webPath.setTextAndAddToHistory(propertiesComponent.getValue("PatcherSaveWebPath"));
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.length];
@@ -140,8 +144,8 @@ public class PatcherDialog extends JDialog {
         // 保存输入的路径
         webPath.setTextAndAddToHistory(webPath.getText());
         // 设置全局保存数据
-        PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", webPath.getText());
-        PropertiesComponent.getInstance().setValue("PatcherSavePath", savePath.getText());
+        propertiesComponent.setValue("PatcherSaveWebPath", webPath.getText());
+        propertiesComponent.setValue("PatcherSavePath", savePath.getText());
 
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
@@ -237,13 +241,20 @@ public class PatcherDialog extends JDialog {
     }
 
     private void createUIComponents() {
+        propertiesComponent = PropertiesComponent.getInstance();
         webPath = new TextFieldWithStoredHistory("webapp");
         webPath.setMaximumRowCount(10);
         if (webPath.getHistory().size() == 0) {
             webPath.setTextAndAddToHistory("WebRoot");
             webPath.setTextAndAddToHistory("webapp");
-            PropertiesComponent.getInstance().setValue("PatcherSaveWebPath", "webapp");
-            PropertiesComponent.getInstance().setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
+            propertiesComponent.setValue("PatcherSaveWebPath", "webapp");
+            propertiesComponent.setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
+        }
+        if (Strings.isNullOrEmpty(propertiesComponent.getValue("PatcherSaveWebPath"))) {
+            propertiesComponent.setValue("PatcherSaveWebPath", "webapp");
+        }
+        if (Strings.isNullOrEmpty(propertiesComponent.getValue("PatcherSavePath"))) {
+            propertiesComponent.setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
         }
     }
 }
