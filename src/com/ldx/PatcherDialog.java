@@ -1,6 +1,5 @@
 package com.ldx;
 
-import com.fasterxml.jackson.databind.ser.impl.StringArraySerializer;
 import com.google.common.base.Strings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
@@ -29,7 +28,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,7 +44,7 @@ public class PatcherDialog extends JDialog {
     private TextFieldWithStoredHistory webPath;
     private JBList<String> fileList;
 
-    private JButton buttonOK;
+    private JButton buttonOk;
     private JButton buttonCancel;
 
     private Module[] modules;
@@ -66,17 +64,16 @@ public class PatcherDialog extends JDialog {
         setTitle("Create Patcher Dialog");
         setContentPane(contentPane);
         setModalityType(ModalityType.APPLICATION_MODAL);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(buttonOk);
 
         // 设置模块名称
         Set<String> collect = Arrays.stream(modules).map(Module::getName).collect(Collectors.toSet());
         moduleName.setText(StringUtils.join(collect, ";"));
 
         // 设置保存路径
-        savePath.setText(propertiesComponent.getValue("PatcherSavePath"));
-
+        savePath.setText(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_PATH));
         //设置WEB路径
-        webPath.setTextAndAddToHistory(propertiesComponent.getValue("PatcherSaveWebPath"));
+        webPath.setTextAndAddToHistory(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH));
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.length];
@@ -111,7 +108,7 @@ public class PatcherDialog extends JDialog {
             FileChooserDescriptor singleFileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
             savePath.addBrowseFolderListener("Select Patcher Save Path", null, project, singleFileDescriptor);
 
-            buttonOK.addActionListener(e -> {
+            buttonOk.addActionListener(e -> {
                 onOK();
                 dispose();
             });
@@ -121,7 +118,7 @@ public class PatcherDialog extends JDialog {
             initDialog(event);
         } else {
             // 设置通知
-            Notification notification = new Notification("Patcher", "Patcher", "Please select a patch file", NotificationType.ERROR);
+            Notification notification = new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Please select a patch file", NotificationType.ERROR);
             Notifications.Bus.notify(notification);
         }
 
@@ -144,13 +141,13 @@ public class PatcherDialog extends JDialog {
         // 保存输入的路径
         webPath.setTextAndAddToHistory(webPath.getText());
         // 设置全局保存数据
-        propertiesComponent.setValue("PatcherSaveWebPath", webPath.getText());
-        propertiesComponent.setValue("PatcherSavePath", savePath.getText());
+        propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, webPath.getText());
+        propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_PATH, savePath.getText());
 
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
         compilerManager.make(project, modules, (aborted, errors, warnings, compileContext) -> {
-            Notification notification = new Notification("Patcher", "Patcher", "Please select a patch file", NotificationType.ERROR);
+            Notification notification = new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Please select a patch file", NotificationType.ERROR);
             if (aborted) {
                 notification.setContent("Code compilation has been aborted.");
                 Notifications.Bus.notify(notification);
@@ -163,7 +160,7 @@ public class PatcherDialog extends JDialog {
             }
             try {
                 execute(compileContext, modules);
-                Notifications.Bus.notify(new Notification("Patcher", "Patcher", "Export patch successfully", NotificationType.INFORMATION));
+                Notifications.Bus.notify(new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE,"Export patch successfully", NotificationType.INFORMATION));
             } catch (IOException e) {
                 notification.setContent("Export patch failed");
                 Notifications.Bus.notify(notification);
@@ -173,23 +170,20 @@ public class PatcherDialog extends JDialog {
     }
 
     private void execute(CompileContext compileContext, Module[] modules) throws IOException {
-        for (int i = 0; i < modules.length; i++) {
+        for (Module module : modules) {
             // 编译输出目录
-            VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(modules[i]);
+            VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(module);
             // 源码目录
-            ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(modules[i]);
-            VirtualFile[] sourceRoots = moduleRootManager.getSourceRoots();
+            VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots();
 
-            for (int k = 0; k < patcherFiles.length; k++) {
-                VirtualFile patcherFile = patcherFiles[k];
+            for (VirtualFile patcherFile : patcherFiles) {
                 Module moduleForFile = ModuleUtil.findModuleForFile(patcherFile, project);
-                if (!modules[i].equals(moduleForFile)) {
+                if (!module.equals(moduleForFile)) {
                     continue;
                 }
                 //处理类路径下的文件
                 boolean judge = true;
-                for (int j = 0; j < sourceRoots.length; j++) {
-                    VirtualFile sourceRoot = sourceRoots[j];
+                for (VirtualFile sourceRoot : sourceRoots) {
                     if (patcherFile.getPath().contains(sourceRoot.getPath())) {
                         judge = false;
                         //编辑后的包路径
@@ -202,15 +196,13 @@ public class PatcherDialog extends JDialog {
                         //编译后路径
                         Path classFilesPath = Paths.get(compilerOutputPath.getPath(), packagePath.toString());
                         //需要保存的路径
-                        Path saveClassPath = Paths.get(savePath.getText(), modules[i].getName(), "WEB-INF", "classes", packagePath.toString());
+                        Path saveClassPath = Paths.get(savePath.getText(), module.getName(), "WEB-INF", "classes", packagePath.toString());
                         if (Files.notExists(saveClassPath)) {
                             Files.createDirectories(saveClassPath);
                         }
                         if ("java".equals(classSuffix)) {
                             DirectoryStream<Path> classPaths = Files.newDirectoryStream(classFilesPath, classFileName + "*.class");
-                            Iterator<Path> iterator = classPaths.iterator();
-                            while (iterator.hasNext()) {
-                                Path next = iterator.next();
+                            for (Path next : classPaths) {
                                 Files.copy(next, Paths.get(saveClassPath.toString(), next.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
                             }
                         } else {
@@ -224,7 +216,7 @@ public class PatcherDialog extends JDialog {
                     if (judgePath.endsWith(Paths.get(webPath.getText()))) {
                         int webIndex = patcherFile.getPath().lastIndexOf(webPath.getText());
                         String substring = patcherFile.getPath().substring(webIndex).replace(webPath.getText(), "");
-                        Path saveStaticPath = Paths.get(savePath.getText(), modules[i].getName(), substring);
+                        Path saveStaticPath = Paths.get(savePath.getText(), module.getName(), substring);
                         if (Files.notExists(saveStaticPath)) {
                             Files.createDirectories(saveStaticPath);
                         }
@@ -242,19 +234,19 @@ public class PatcherDialog extends JDialog {
 
     private void createUIComponents() {
         propertiesComponent = PropertiesComponent.getInstance();
-        webPath = new TextFieldWithStoredHistory("webapp");
+        webPath = new TextFieldWithStoredHistory(PatcherEnum.WEB_PATH[1]);
         webPath.setMaximumRowCount(10);
         if (webPath.getHistory().size() == 0) {
-            webPath.setTextAndAddToHistory("WebRoot");
-            webPath.setTextAndAddToHistory("webapp");
-            propertiesComponent.setValue("PatcherSaveWebPath", "webapp");
-            propertiesComponent.setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
+            webPath.setTextAndAddToHistory(PatcherEnum.WEB_PATH[0]);
+            webPath.setTextAndAddToHistory(PatcherEnum.WEB_PATH[1]);
+            propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.WEB_PATH[1]);
+            propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.DESKTOP_PATH);
         }
-        if (Strings.isNullOrEmpty(propertiesComponent.getValue("PatcherSaveWebPath"))) {
-            propertiesComponent.setValue("PatcherSaveWebPath", "webapp");
+        if (Strings.isNullOrEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH))) {
+            propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.WEB_PATH[1]);
         }
-        if (Strings.isNullOrEmpty(propertiesComponent.getValue("PatcherSavePath"))) {
-            propertiesComponent.setValue("PatcherSavePath", Paths.get(System.getProperty("user.home"), "Desktop").toString());
+        if (Strings.isNullOrEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH))) {
+            propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.DESKTOP_PATH);
         }
     }
 }
