@@ -20,15 +20,18 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.TextFieldWithStoredHistory;
 import com.intellij.ui.components.JBList;
+import com.intellij.util.Url;
+import com.intellij.util.UrlImpl;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.rngom.util.Uri;
 import sun.awt.SunToolkit;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Objects;
@@ -49,6 +52,7 @@ public class PatcherDialog extends JDialog {
 
     private JButton buttonOk;
     private JButton buttonCancel;
+    private JLabel pathcerTitle;
 
     private Module[] modules;
     private Project project;
@@ -118,6 +122,17 @@ public class PatcherDialog extends JDialog {
             });
 
             buttonCancel.addActionListener(e -> dispose());
+
+            pathcerTitle.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop().browse(URI.create("https://github.com/Liang-Dongxing/patcher"));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
 
             contentPane.registerKeyboardAction(e -> dispose(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
