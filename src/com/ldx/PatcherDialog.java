@@ -1,6 +1,7 @@
 package com.ldx;
 
 import com.google.common.base.Strings;
+import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -29,11 +30,13 @@ import sun.awt.SunToolkit;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,6 +56,7 @@ public class PatcherDialog extends JDialog {
     private JButton buttonOk;
     private JButton buttonCancel;
     private JLabel pathcerTitle;
+    private JCheckBox oldPatcher;
 
     private Module[] modules;
     private Project project;
@@ -179,9 +183,10 @@ public class PatcherDialog extends JDialog {
                 Notifications.Bus.notify(notification);
                 return;
             }
+
             try {
                 execute(compileContext, modules);
-                Notifications.Bus.notify(new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE,"Export patch successfully", NotificationType.INFORMATION));
+                Notifications.Bus.notify(new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Export patch successfully", NotificationType.INFORMATION));
             } catch (IOException e) {
                 notification.setContent("Export patch failed");
                 Notifications.Bus.notify(notification);
@@ -192,6 +197,16 @@ public class PatcherDialog extends JDialog {
 
     private void execute(CompileContext compileContext, Module[] modules) throws IOException {
         for (Module module : modules) {
+            // 删除旧补丁文件
+            if (oldPatcher.isSelected()) {
+                Files.walk(Paths.get(savePath.getText(), module.getName())).sorted(Comparator.reverseOrder()).forEach(x -> {
+                    try {
+                        Files.deleteIfExists(x);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
             // 编译输出目录
             VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(module);
             // 源码目录
