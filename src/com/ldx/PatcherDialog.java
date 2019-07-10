@@ -3,9 +3,7 @@ package com.ldx;
 import com.google.common.base.Strings;
 import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
+import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -172,24 +170,22 @@ public class PatcherDialog extends JDialog {
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
         compilerManager.make(project, modules, (aborted, errors, warnings, compileContext) -> {
-            Notification notification = new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Please select a patch file", NotificationType.ERROR);
+            NotificationGroup notificationGroup = new NotificationGroup(PatcherEnum.PATCHER_NOTIFICATION_TITLE, NotificationDisplayType.BALLOON, true);
             if (aborted) {
-                notification.setContent("Code compilation has been aborted.");
-                Notifications.Bus.notify(notification);
+                Notifications.Bus.notify(notificationGroup.createNotification("Code compilation has been aborted.",NotificationType.ERROR));
                 return;
             }
             if (errors != 0) {
-                notification.setContent("Errors occurred while compiling code!");
-                Notifications.Bus.notify(notification);
+                Notifications.Bus.notify(notificationGroup.createNotification("Errors occurred while compiling code!",NotificationType.ERROR));
                 return;
             }
 
             try {
                 execute(compileContext, modules);
-                Notifications.Bus.notify(new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Export patch successfully", NotificationType.INFORMATION));
+                String content = "Export patch successfully.<br><a href=\"file://" + savePath.getText() + "\" target=\"blank\">open</a>";
+                Notifications.Bus.notify(notificationGroup.createNotification(PatcherEnum.PATCHER_NOTIFICATION_TITLE,content,NotificationType.INFORMATION,NotificationListener.URL_OPENING_LISTENER));
             } catch (IOException e) {
-                notification.setContent("Export patch failed");
-                Notifications.Bus.notify(notification);
+                Notifications.Bus.notify(notificationGroup.createNotification("Export patch failed.",NotificationType.ERROR));
                 e.printStackTrace();
             }
         });
@@ -199,13 +195,16 @@ public class PatcherDialog extends JDialog {
         for (Module module : modules) {
             // 删除旧补丁文件
             if (oldPatcher.isSelected()) {
-                Files.walk(Paths.get(savePath.getText(), module.getName())).sorted(Comparator.reverseOrder()).forEach(x -> {
-                    try {
-                        Files.deleteIfExists(x);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                Path saveModulePath = Paths.get(savePath.getText(), module.getName());
+                if (Files.isDirectory(saveModulePath)) {
+                    Files.walk(saveModulePath).sorted(Comparator.reverseOrder()).forEach(x -> {
+                        try {
+                            Files.deleteIfExists(x);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
             }
             // 编译输出目录
             VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(module);
