@@ -86,7 +86,7 @@ public class PatcherDialog extends JDialog {
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.length];
-        Arrays.stream(patcherFiles).map(x -> x.getPath().substring(x.getPath().indexOf(project.getName()))).collect(Collectors.toList()).toArray(fileArray);
+        Arrays.stream(patcherFiles).map(x -> project.getName() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
         fileList.setListData(fileArray);
         fileList.setEmptyText("No File Selected!");
     }
