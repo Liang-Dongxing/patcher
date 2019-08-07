@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
 import com.intellij.ui.TextFieldWithStoredHistory;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.Url;
@@ -26,6 +27,8 @@ import org.kohsuke.rngom.util.Uri;
 import sun.awt.SunToolkit;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -33,11 +36,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Liang
@@ -46,7 +49,7 @@ public class PatcherDialog extends JDialog {
 
     private JPanel contentPane;
 
-    private JTextField moduleName;
+    private JTextField projectName;
     private TextFieldWithBrowseButton savePath;
     private TextFieldWithStoredHistory webPath;
     private JBList<String> fileList;
@@ -59,7 +62,7 @@ public class PatcherDialog extends JDialog {
 
     private Module[] modules;
     private Project project;
-    private VirtualFile[] patcherFiles;
+    private List<VirtualFile> patcherFiles = new LinkedList<>();
 
     private PropertiesComponent propertiesComponent;
 
@@ -77,7 +80,7 @@ public class PatcherDialog extends JDialog {
         getRootPane().setDefaultButton(buttonOk);
 
         // 设置模块名称
-        moduleName.setText(project.getName());
+        projectName.setText(project.getName());
 
         // 设置保存路径
         savePath.setText(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_PATH));
@@ -85,8 +88,8 @@ public class PatcherDialog extends JDialog {
         webPath.setTextAndAddToHistory(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH));
 
         // 获取需要打补丁的文件列表
-        String[] fileArray = new String[patcherFiles.length];
-        Arrays.stream(patcherFiles).map(x -> project.getName() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+        String[] fileArray = new String[patcherFiles.size()];
+        patcherFiles.stream().map(x -> project.getName() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
         fileList.setListData(fileArray);
         fileList.setEmptyText("No File Selected!");
     }
@@ -104,15 +107,46 @@ public class PatcherDialog extends JDialog {
         // 获取当前Project对象
         project = event.getProject();
         // 获取全部补丁源文件
-        patcherFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
+        VirtualFile[] patcherDirectoryAndFiles = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
+        assert patcherDirectoryAndFiles != null;
+        for (VirtualFile patcherDirectoryAndFile : patcherDirectoryAndFiles) {
+            if (patcherDirectoryAndFile.isDirectory()) {
+                patcherFiles.addAll(Arrays.asList(patcherDirectoryAndFile.getChildren()));
+            } else {
+                patcherFiles.add(patcherDirectoryAndFile);
+            }
+        }
+
         // 获取文件的module
-        assert patcherFiles != null;
-        Set<Module> collect = Arrays.stream(patcherFiles).map(virtualFile -> ModuleUtil.findModuleForFile(virtualFile, project)).collect(Collectors.toSet());
+        Set<Module> collect = patcherFiles.stream().map(virtualFile -> ModuleUtil.findModuleForFile(virtualFile, project)).collect(Collectors.toSet());
         modules = collect.toArray(Module.EMPTY_ARRAY);
 
         if (modules.length > 0 || Objects.isNull(project)) {
 
             initPane(event);
+
+            projectName.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    String[] fileArray = new String[patcherFiles.size()];
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    fileList.setListData(fileArray);
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    String[] fileArray = new String[patcherFiles.size()];
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    fileList.setListData(fileArray);
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    String[] fileArray = new String[patcherFiles.size()];
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    fileList.setListData(fileArray);
+                }
+            });
 
             // 设置文件夹浏览器
             FileChooserDescriptor singleFileDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
@@ -195,7 +229,7 @@ public class PatcherDialog extends JDialog {
         for (Module module : modules) {
             // 删除旧补丁文件
             if (oldPatcher.isSelected()) {
-                Path saveModulePath = Paths.get(savePath.getText(), module.getName());
+                Path saveModulePath = Paths.get(savePath.getText(), projectName.getText());
                 if (Files.isDirectory(saveModulePath)) {
                     Files.walk(saveModulePath).sorted(Comparator.reverseOrder()).forEach(x -> {
                         try {
@@ -209,81 +243,71 @@ public class PatcherDialog extends JDialog {
             // 编译输出目录
             VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(module);
             // 源码目录
-            VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots();
-            // 处理项目名字和模块名字相同
-            Path projectName = null;
-            if (project.getName().equals(module.getName())) {
-                projectName = Paths.get(savePath.getText(), module.getName());
-            } else {
-                projectName = Paths.get(savePath.getText(), project.getName(), module.getName());
-            }
+            VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(false);
+
+            // 获取导出文件源码还是二进制码
             String tempPatcherType = String.valueOf(patcherType.getSelectedItem()).toLowerCase();
-            for (VirtualFile patcherFile : patcherFiles) {
-                switch (tempPatcherType) {
-                    case "class":
+            switch (tempPatcherType) {
+                case "class":
+                    // 处理项目名字和模块名字相同
+                    Path projectNamePath = null;
+                    if (project.getName().equals(module.getName())) {
+                        projectNamePath = Paths.get(savePath.getText(), this.projectName.getText());
+                    } else {
+                        projectNamePath = Paths.get(savePath.getText(), this.projectName.getText(), module.getName());
+                    }
+                    for (VirtualFile patcherFile : patcherFiles) {
                         Module moduleForFile = ModuleUtil.findModuleForFile(patcherFile, project);
                         if (!module.equals(moduleForFile)) {
                             continue;
                         }
-                        //处理类路径下的文件
-                        boolean judge = true;
-                        for (VirtualFile sourceRoot : sourceRoots) {
-                            if (patcherFile.getPath().contains(sourceRoot.getPath())) {
-                                judge = false;
-                                //编辑后的包路径
-                                Path packagePath = Paths.get(sourceRoot.getPath()).relativize(Paths.get(patcherFile.getParent().getPath()));
-                                //文件名字和文件格式
-                                String classFileNameSuffix = patcherFile.getName();
-                                String classFileName = patcherFile.getNameWithoutExtension();
-                                String classSuffix = patcherFile.getExtension();
+                        Optional<VirtualFile> first = Stream.of(sourceRoots).filter(virtualFile -> patcherFile.getPath().contains(virtualFile.getPath())).findFirst();
+                        if (first.isPresent()) {
+                            // 源码路径文件
+                            Path packagePath = Paths.get(first.get().getPath()).relativize(Paths.get(patcherFile.getParent().getPath()));
+                            //文件名字和文件格式
+                            String classFileNameSuffix = patcherFile.getName();
+                            String classFileName = patcherFile.getNameWithoutExtension();
+                            String classSuffix = patcherFile.getExtension();
 
-                                //编译后路径
-                                Path classFilesPath = Paths.get(compilerOutputPath.getPath(), packagePath.toString());
-                                //需要保存的路径
-                                Path saveClassPath = Paths.get(projectName.toString(), "WEB-INF", "classes", packagePath.toString());
-                                if (Files.notExists(saveClassPath)) {
-                                    Files.createDirectories(saveClassPath);
-                                }
-                                if ("java".equals(classSuffix)) {
-                                    DirectoryStream<Path> classPaths = Files.newDirectoryStream(classFilesPath, classFileName + "*.class");
-                                    for (Path next : classPaths) {
-                                        Files.copy(next, Paths.get(saveClassPath.toString(), next.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
-                                    }
-                                } else {
-                                    Files.copy(Paths.get(classFilesPath.toString(), classFileNameSuffix), Paths.get(saveClassPath.toString(), classFileNameSuffix), StandardCopyOption.REPLACE_EXISTING);
-                                }
-                                break;
+                            //编译后路径
+                            Path classFilesPath = Paths.get(compilerOutputPath.getPath(), packagePath.toString());
+                            //需要保存的路径
+                            Path saveClassPath = Paths.get(projectNamePath.toString(), "WEB-INF", "classes", packagePath.toString());
+                            if (Files.notExists(saveClassPath)) {
+                                Files.createDirectories(saveClassPath);
                             }
-                        }
-                        Path judgePath = Paths.get(patcherFile.getPath());
-                        while (judge) {
-                            if (judgePath.endsWith(Paths.get(webPath.getText()))) {
-                                int webIndex = patcherFile.getPath().lastIndexOf(webPath.getText());
-                                String substring = patcherFile.getPath().substring(webIndex).replace(webPath.getText(), "");
-                                Path saveStaticPath = Paths.get(projectName.toString(), substring);
-                                if (Files.notExists(saveStaticPath)) {
-                                    Files.createDirectories(saveStaticPath);
+                            if ("java".equals(classSuffix)) {
+                                DirectoryStream<Path> classPaths = Files.newDirectoryStream(classFilesPath, classFileName + "*.class");
+                                for (Path next : classPaths) {
+                                    Files.copy(next, Paths.get(saveClassPath.toString(), next.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
                                 }
-                                Files.copy(Paths.get(patcherFile.getPath()), saveStaticPath, StandardCopyOption.REPLACE_EXISTING);
-                                break;
-                            } else if (!Paths.get(project.getBasePath()).equals(judgePath)) {
-                                judgePath = judgePath.getParent();
                             } else {
-                                break;
+                                Files.copy(Paths.get(classFilesPath.toString(), classFileNameSuffix), Paths.get(saveClassPath.toString(), classFileNameSuffix), StandardCopyOption.REPLACE_EXISTING);
                             }
+                        } else if (patcherFile.getPath().contains(webPath.getText())) {
+                            // 处理web静态目录文件
+                            int webIndex = patcherFile.getPath().lastIndexOf(webPath.getText());
+                            String substring = patcherFile.getPath().substring(webIndex).replace(webPath.getText(), "");
+                            Path saveStaticPath = Paths.get(projectNamePath.toString(), substring);
+                            if (Files.notExists(saveStaticPath)) {
+                                Files.createDirectories(saveStaticPath);
+                            }
+                            Files.copy(Paths.get(patcherFile.getPath()), saveStaticPath, StandardCopyOption.REPLACE_EXISTING);
                         }
-                        break;
-                    case "java":
-                        Path saveStaticPath = Paths.get(savePath.getText(), module.getProject().getName(), patcherFile.getPath().replaceFirst(module.getProject().getBasePath(), ""));
+                    }
+                    break;
+                case "java":
+                    for (VirtualFile patcherFile : patcherFiles) {
+                        Path saveStaticPath = Paths.get(savePath.getText(), this.projectName.getText(), patcherFile.getPath().replaceFirst(module.getProject().getBasePath(), ""));
                         if (Files.notExists(saveStaticPath)) {
                             Files.createDirectories(saveStaticPath);
                         }
                         Files.copy(Paths.get(patcherFile.getPath()), saveStaticPath, StandardCopyOption.REPLACE_EXISTING);
-                        break;
-                    default:
-                        break;
-                }
-
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }
