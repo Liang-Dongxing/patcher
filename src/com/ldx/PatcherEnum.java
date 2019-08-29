@@ -31,4 +31,6 @@ class PatcherEnum {
      */
     static final String DESKTOP_PATH = Paths.get(System.getProperty("user.home"), "Desktop").toString();
 
+    static final String DELETE_OLD_PATCHER = "DeleteOldPatcher";
+
 }

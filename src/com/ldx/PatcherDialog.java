@@ -86,6 +86,8 @@ public class PatcherDialog extends JDialog {
         savePath.setText(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_PATH));
         //设置WEB路径
         webPath.setTextAndAddToHistory(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH));
+        //获取历史是否有删除过就补丁
+        oldPatcher.setSelected(Boolean.parseBoolean(propertiesComponent.getValue(PatcherEnum.DELETE_OLD_PATCHER)));
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.size()];
@@ -229,6 +231,7 @@ public class PatcherDialog extends JDialog {
         for (Module module : modules) {
             // 删除旧补丁文件
             if (oldPatcher.isSelected()) {
+                propertiesComponent.setValue(PatcherEnum.DELETE_OLD_PATCHER, oldPatcher.isSelected());
                 Path saveModulePath = Paths.get(savePath.getText(), projectName.getText());
                 if (Files.isDirectory(saveModulePath)) {
                     Files.walk(saveModulePath).sorted(Comparator.reverseOrder()).forEach(x -> {
@@ -239,6 +242,8 @@ public class PatcherDialog extends JDialog {
                         }
                     });
                 }
+            } else {
+                propertiesComponent.setValue(PatcherEnum.DELETE_OLD_PATCHER, oldPatcher.isSelected());
             }
             // 编译输出目录
             VirtualFile compilerOutputPath = compileContext.getModuleOutputDirectory(module);
