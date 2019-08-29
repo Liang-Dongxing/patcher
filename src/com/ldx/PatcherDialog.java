@@ -1,5 +1,7 @@
 package com.ldx;
 
+import java.time.format.DateTimeFormatter;
+
 import com.google.common.base.Strings;
 import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import com.intellij.ide.util.PropertiesComponent;
@@ -37,6 +39,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -218,7 +221,7 @@ public class PatcherDialog extends JDialog {
 
             try {
                 execute(compileContext, modules);
-                String content = "Export patch successfully.<br><a href=\"file://" + savePath.getText() + "\" target=\"blank\">open</a>";
+                String content = "Export patch successfully(" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ").<br><a href=\"file://" + savePath.getText() + "\" target=\"blank\">open</a>";
                 Notifications.Bus.notify(notificationGroup.createNotification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, content, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
             } catch (IOException e) {
                 Notifications.Bus.notify(notificationGroup.createNotification("Export patch failed.", NotificationType.ERROR));
