@@ -224,7 +224,7 @@ public class PatcherDialog extends JDialog {
                 String content = "Export patch successfully(" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + ").<br><a href=\"file://" + savePath.getText() + "\" target=\"blank\">open</a>";
                 Notifications.Bus.notify(notificationGroup.createNotification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, content, NotificationType.INFORMATION, NotificationListener.URL_OPENING_LISTENER));
             } catch (IOException e) {
-                Notifications.Bus.notify(notificationGroup.createNotification("Export patch failed.", NotificationType.ERROR));
+                Notifications.Bus.notify(notificationGroup.createNotification("Export patch failed.<br>" + e.getMessage(), NotificationType.ERROR));
                 e.printStackTrace();
             }
         });
