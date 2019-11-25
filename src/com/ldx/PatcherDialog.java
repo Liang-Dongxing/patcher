@@ -241,7 +241,11 @@ public class PatcherDialog extends JDialog {
                         try {
                             Files.deleteIfExists(x);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            try {
+                                Files.deleteIfExists(x);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     });
                 }
