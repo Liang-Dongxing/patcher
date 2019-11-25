@@ -290,8 +290,12 @@ public class PatcherDialog extends JDialog {
                                 Files.createDirectories(saveClassPath);
                             }
                             if ("java".equals(classSuffix)) {
-                                DirectoryStream<Path> classPaths = Files.newDirectoryStream(classFilesPath, classFileName + "*.class");
+                                DirectoryStream<Path> classPaths = Files.newDirectoryStream(classFilesPath, classFileName + ".class");
                                 for (Path next : classPaths) {
+                                    Files.copy(next, Paths.get(saveClassPath.toString(), next.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
+                                }
+                                DirectoryStream<Path> classPathsProxy = Files.newDirectoryStream(classFilesPath, classFileName + "$*.class");
+                                for (Path next : classPathsProxy) {
                                     Files.copy(next, Paths.get(saveClassPath.toString(), next.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
                                 }
                             } else {
