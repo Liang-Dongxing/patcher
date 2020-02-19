@@ -25,6 +25,8 @@
         <!--    设置 idea Action    -->
         <action id="ldx.patcher" class="com.CreatePatcherAction" text="Create Patcher" description="Create Java SE and Java EE project patch files.">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" anchor="first"/><!-- Version Control-Log  -->
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="first"/>      <!-- Version Control-Local Change  -->
             <keyboard-shortcut first-keystroke="shift alt E" keymap="$default"/>
         </action>
     </actions>

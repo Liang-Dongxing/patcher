@@ -24,7 +24,7 @@ class PatcherEnum {
     /**
      * webPath
      */
-    static final String[] WEB_PATH = {"WebRoot", "webapp"};
+    static final String[] WEB_PATH = {"WebRoot", "webapp","WebContent"};
 
     /**
      * 桌面路径
