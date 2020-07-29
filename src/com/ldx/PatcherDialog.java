@@ -2,7 +2,7 @@ package com.ldx;
 
 import java.time.format.DateTimeFormatter;
 
-import com.google.common.base.Strings;
+import com.jgoodies.common.base.Strings;
 import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
@@ -42,6 +42,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -338,10 +339,10 @@ public class PatcherDialog extends JDialog {
             propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.WEB_PATH[1]);
             propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_PATH, PatcherEnum.DESKTOP_PATH);
         }
-        if (Strings.isNullOrEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH))) {
+        if (Strings.isNotEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_WEB_PATH))) {
             propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_WEB_PATH, PatcherEnum.WEB_PATH[1]);
         }
-        if (Strings.isNullOrEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_PATH))) {
+        if (Strings.isNotEmpty(propertiesComponent.getValue(PatcherEnum.PATCHER_SAVE_PATH))) {
             propertiesComponent.setValue(PatcherEnum.PATCHER_SAVE_PATH, PatcherEnum.DESKTOP_PATH);
         }
     }
