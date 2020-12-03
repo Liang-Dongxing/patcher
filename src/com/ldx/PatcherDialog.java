@@ -1,9 +1,5 @@
 package com.ldx;
 
-import java.time.format.DateTimeFormatter;
-
-import com.jgoodies.common.base.Strings;
-import com.intellij.ide.ui.EditorOptionsTopHitProvider;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -19,30 +15,24 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
 import com.intellij.ui.TextFieldWithStoredHistory;
 import com.intellij.ui.components.JBList;
-import com.intellij.util.Url;
-import com.intellij.util.UrlImpl;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.rngom.util.Uri;
-
+import com.jgoodies.common.base.Strings;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,6 +60,8 @@ public class PatcherDialog extends JDialog {
 
     private PropertiesComponent propertiesComponent;
 
+    private final NotificationGroup notificationGroup = NotificationGroupManager.getInstance().getNotificationGroup(PatcherEnum.PATCHER_NOTIFICATION_TITLE);
+
 
     /**
      * 初始化 Pane 内容
@@ -95,9 +87,9 @@ public class PatcherDialog extends JDialog {
 
         // 获取需要打补丁的文件列表
         String[] fileArray = new String[patcherFiles.size()];
-        patcherFiles.stream().map(x -> project.getName() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+        patcherFiles.stream().map(x -> project.getName() + x.getPath().replaceFirst(Objects.requireNonNull(project.getBasePath()), "")).collect(Collectors.toList()).toArray(fileArray);
         fileList.setListData(fileArray);
-        fileList.setEmptyText("No File Selected!");
+        fileList.setEmptyText("No file selected!");
     }
 
     private void initDialog(AnActionEvent event) {
@@ -135,21 +127,21 @@ public class PatcherDialog extends JDialog {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
                     String[] fileArray = new String[patcherFiles.size()];
-                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(Objects.requireNonNull(project.getBasePath()), "")).collect(Collectors.toList()).toArray(fileArray);
                     fileList.setListData(fileArray);
                 }
 
                 @Override
                 public void removeUpdate(DocumentEvent e) {
                     String[] fileArray = new String[patcherFiles.size()];
-                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(Objects.requireNonNull(project.getBasePath()), "")).collect(Collectors.toList()).toArray(fileArray);
                     fileList.setListData(fileArray);
                 }
 
                 @Override
                 public void changedUpdate(DocumentEvent e) {
                     String[] fileArray = new String[patcherFiles.size()];
-                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(project.getBasePath(), "")).collect(Collectors.toList()).toArray(fileArray);
+                    patcherFiles.stream().map(x -> projectName.getText() + x.getPath().replaceFirst(Objects.requireNonNull(project.getBasePath()), "")).collect(Collectors.toList()).toArray(fileArray);
                     fileList.setListData(fileArray);
                 }
             });
@@ -181,8 +173,7 @@ public class PatcherDialog extends JDialog {
             initDialog(event);
         } else {
             // 设置通知
-            Notification notification = new Notification(PatcherEnum.PATCHER_NOTIFICATION_TITLE, PatcherEnum.PATCHER_NOTIFICATION_TITLE, "Please select a patch file", NotificationType.ERROR);
-            Notifications.Bus.notify(notification);
+            Notifications.Bus.notify(notificationGroup.createNotification("Please select a patch file.", NotificationType.ERROR));
         }
 
     }
@@ -212,7 +203,6 @@ public class PatcherDialog extends JDialog {
         // 编译项目
         CompilerManager compilerManager = CompilerManager.getInstance(project);
         compilerManager.make(project, modules, (aborted, errors, warnings, compileContext) -> {
-            NotificationGroup notificationGroup = new NotificationGroup(PatcherEnum.PATCHER_NOTIFICATION_TITLE, NotificationDisplayType.BALLOON, true);
             if (aborted) {
                 Notifications.Bus.notify(notificationGroup.createNotification("Code compilation has been aborted.", NotificationType.ERROR));
                 return;
@@ -318,7 +308,7 @@ public class PatcherDialog extends JDialog {
                     break;
                 case "java":
                     for (VirtualFile patcherFile : patcherFiles) {
-                        Path saveStaticPath = Paths.get(savePath.getText(), this.projectName.getText(), patcherFile.getPath().replaceFirst(module.getProject().getBasePath(), ""));
+                        Path saveStaticPath = Paths.get(savePath.getText(), this.projectName.getText(), patcherFile.getPath().replaceFirst(Objects.requireNonNull(module.getProject().getBasePath()), ""));
                         if (Files.notExists(saveStaticPath)) {
                             Files.createDirectories(saveStaticPath);
                         }
