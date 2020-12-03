@@ -26,7 +26,7 @@ import com.intellij.util.Url;
 import com.intellij.util.UrlImpl;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.rngom.util.Uri;
-import sun.awt.SunToolkit;
+
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -196,8 +196,10 @@ public class PatcherDialog extends JDialog {
         // 获取当前程序组件
         Component component = event.getData(PlatformDataKeys.CONTEXT_COMPONENT);
         //获取当前组件窗口信息
-        Window componentWindow = SunToolkit.getContainingWindow(component);
-        super.setLocationRelativeTo(componentWindow);
+        while (component != null && !(component instanceof Window)) {
+            component = component.getParent();
+        }
+        super.setLocationRelativeTo(component);
     }
 
     private void onOK() {
