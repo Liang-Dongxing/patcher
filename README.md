@@ -15,6 +15,3 @@ IntelliJ IDEA 导出增量补丁插件
 
 # 演示
 ![Patcher.gif](image/Patcher.gif)
-
-# 感谢支持
-![支付宝.jpg](image/支付宝.png) ![微信.png](image/微信.png)
