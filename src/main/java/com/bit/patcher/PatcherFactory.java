@@ -16,6 +16,8 @@ import javax.swing.*;
  * @version 1.0
  * @date 2020/12/1 16:00
  * Created by IntelliJ IDEA
+ * <p>
+ * 工具窗口工厂类
  */
 public class PatcherFactory implements ToolWindowFactory {
     @Override
@@ -26,6 +28,11 @@ public class PatcherFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         PatcherToolWindow patcherToolWindow = new PatcherToolWindow(project, toolWindow);
+
+        PatcherUtils.setModuleNameComboBox(project, patcherToolWindow.getModuleNameComboBox());
+        PatcherUtils.setLibraryComboBox(project, patcherToolWindow.getModuleTypeComboBox());
+        PatcherUtils.setDavePathDefault(patcherToolWindow.getSavePathTextFieldWithBrowseButton());
+        PatcherUtils.setBrowseFolderListener(project, patcherToolWindow.getSavePathTextFieldWithBrowseButton());
         // 创建工具窗口内容
         ContentFactory contentFactory = ContentFactory.getInstance();
         Content content = contentFactory.createContent(patcherToolWindow.getContent(), "", false);

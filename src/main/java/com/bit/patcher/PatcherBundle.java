@@ -11,6 +11,8 @@ import org.jetbrains.annotations.PropertyKey;
  * @version 1.0
  * @date 2020/12/1 16:00
  * Created by IntelliJ IDEA
+ * <p>
+ * 获取国际化信息
  */
 public class PatcherBundle extends DynamicBundle {
     public static final PatcherBundle INSTANCE = new PatcherBundle();

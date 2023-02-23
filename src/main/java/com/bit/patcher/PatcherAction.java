@@ -13,6 +13,8 @@ import java.util.Objects;
  * @version 1.0
  * @date 2020/12/1 16:00
  * Created by IntelliJ IDEA
+ * <p>
+ * 工具窗口的Action类
  */
 public class PatcherAction extends AnAction {
     @Override

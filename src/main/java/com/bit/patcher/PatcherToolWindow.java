@@ -1,7 +1,5 @@
 package com.bit.patcher;
 
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -9,12 +7,22 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.AddEditRemovePanel;
 import com.intellij.ui.components.JBCheckBox;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * @author Liang
+ * @version 1.0
+ * @date 2020/12/1 16:00
+ * Created by IntelliJ IDEA
+ * <p>
+ * 工具窗口类
+ */
+@Getter
 public class PatcherToolWindow {
 
     private final List<String> saveFilesList = new LinkedList<>();
@@ -32,9 +40,12 @@ public class PatcherToolWindow {
     private JBCheckBox deleteOldPatcherFilesJbCheckBox;
     private JButton okButton;
     private JButton cancelButton;
+    private final Project project;
+    private final ToolWindow toolWindow;
 
     public PatcherToolWindow(Project project, ToolWindow toolWindow) {
-        getAllModule(project);
+        this.project = project;
+        this.toolWindow = toolWindow;
     }
 
     /**
@@ -77,22 +88,6 @@ public class PatcherToolWindow {
 
     public JComponent getContent() {
         return patcherWindowContent;
-    }
-
-    /**
-     * 把模块添加到模块的下拉框
-     *
-     * @param project
-     */
-    private void getAllModule(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        if (modules.length > 1) {
-            moduleNameComboBox.addItem("");
-        }
-        for (Module module : modules) {
-            moduleNameComboBox.addItem(module.getName());
-        }
-
     }
 
 }
