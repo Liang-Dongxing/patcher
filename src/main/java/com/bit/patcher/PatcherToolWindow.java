@@ -39,7 +39,7 @@ public class PatcherToolWindow {
     private JBCheckBox exportTheSourceCodeJbCheckBox;
     private JBCheckBox deleteOldPatcherFilesJbCheckBox;
     private JButton okButton;
-    private JButton cancelButton;
+    private JButton selectButton;
     private final Project project;
     private final ToolWindow toolWindow;
 
@@ -89,6 +89,5 @@ public class PatcherToolWindow {
     public JComponent getContent() {
         return patcherWindowContent;
     }
-
 }
 
