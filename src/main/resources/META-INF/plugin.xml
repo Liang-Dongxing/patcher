@@ -1,0 +1,42 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.bit.patcher</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>Patcher</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="liangdongxing.cn@outlook.com" url="https://github.com/Liang-Dongxing">LiangDongXing</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description>
+        <![CDATA[ Java补丁文件提取打包是指将Java应用程序中的修改或更新打包成一个文件，以便在需要更新或修复程序时使用。该过程通常涉及到从已经存在的Java应用程序中提取修改，然后将其打包成一个可执行的补丁文件，用于更新或修复现有的程序。这个过程对于保持应用程序的正常运行至关重要，因为它可以解决安全漏洞、修复错误、增强功能等问题。 ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.java</depends>
+
+    <resource-bundle>messages.PatcherBundle</resource-bundle>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Patcher" secondary="true" icon="PatcherIcons.PATCHER" anchor="right"
+                    factoryClass="com.bit.patcher.PatcherFactory"/>
+    </extensions>
+    <actions>
+        <!-- Add your actions here -->
+        <!--    设置 idea Action    -->
+        <action id="Patcher" class="com.bit.patcher.PatcherAction" text="Create Patcher" icon="PatcherIcons.PATCHER"
+                description="Create Java SE and Java EE project patch files.">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="Vcs.Log.ChangesBrowser.Popup" anchor="first"/><!-- Version Control-Log  -->
+            <add-to-group group-id="ChangesViewPopupMenu" anchor="first"/>      <!-- Version Control-Local Change  -->
+            <keyboard-shortcut first-keystroke="shift alt E" keymap="$default"/>
+        </action>
+    </actions>
+</idea-plugin>

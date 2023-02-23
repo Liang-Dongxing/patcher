@@ -1,10 +1,3 @@
-out
-
 .idea
-patcher.iml
-
-.git
-
-*.class
-*.war
-*.ear
+.gradle
+build/
