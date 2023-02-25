@@ -28,14 +28,14 @@ public class PatcherFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         PatcherToolWindow patcherToolWindow = new PatcherToolWindow(project, toolWindow);
-
+        PatcherUtils.setPatcherToolWindow(patcherToolWindow);
         PatcherUtils.setModuleNameComboBox(project, patcherToolWindow.getModuleNameComboBox());
         PatcherUtils.setLibraryComboBox(project, patcherToolWindow.getModuleTypeComboBox());
         PatcherUtils.setDavePathDefault(patcherToolWindow.getSavePathTextFieldWithBrowseButton());
         PatcherUtils.setBrowseFolderListener(project, patcherToolWindow.getSavePathTextFieldWithBrowseButton());
         // 创建工具窗口内容
         ContentFactory contentFactory = ContentFactory.getInstance();
-        Content content = contentFactory.createContent(patcherToolWindow.getContent(), "", false);
+        Content content = contentFactory.createContent(patcherToolWindow.getContent(), PatcherBundle.message("patcher.display.name"), false);
         // 将内容添加到工具窗口
         toolWindow.getContentManager().addContent(content);
     }

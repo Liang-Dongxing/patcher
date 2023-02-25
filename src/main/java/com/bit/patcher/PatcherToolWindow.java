@@ -3,16 +3,13 @@ package com.bit.patcher;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.AddEditRemovePanel;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBCheckBox;
 import lombok.Getter;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.LinkedList;
-import java.util.List;
+import java.awt.*;
 
 /**
  * @author Liang
@@ -25,7 +22,6 @@ import java.util.List;
 @Getter
 public class PatcherToolWindow {
 
-    private final List<String> saveFilesList = new LinkedList<>();
     private JPanel patcherWindowContent;
     private JPanel moduleTypePanel;
     private ComboBox<String> moduleTypeComboBox;
@@ -34,7 +30,6 @@ public class PatcherToolWindow {
     private JPanel savePathPanel;
     private TextFieldWithBrowseButton savePathTextFieldWithBrowseButton;
     private JPanel saveFilesPanel;
-    private AddEditRemovePanel<String> filesAddEditRemovePanel;
     private JPanel otherPanel;
     private JBCheckBox exportTheSourceCodeJbCheckBox;
     private JBCheckBox deleteOldPatcherFilesJbCheckBox;
@@ -46,48 +41,37 @@ public class PatcherToolWindow {
     public PatcherToolWindow(Project project, ToolWindow toolWindow) {
         this.project = project;
         this.toolWindow = toolWindow;
+        initializationSaveFilesPanel();
     }
 
     /**
      * 创建自定义的用户界面组件
      */
     public void createUIComponents() {
-        filesAddEditRemovePanel = new AddEditRemovePanel<String>(new AddEditRemovePanel.TableModel<String>() {
-            @Override
-            public int getColumnCount() {
-                return 0;
-            }
 
-            @Override
-            public @Nullable @NlsContexts.ColumnName String getColumnName(int columnIndex) {
-                return null;
-            }
-
-            @Override
-            public Object getField(String o, int columnIndex) {
-                return null;
-            }
-        }, saveFilesList) {
-            @Override
-            protected @Nullable String addItem() {
-                return null;
-            }
-
-            @Override
-            protected boolean removeItem(String o) {
-                return false;
-            }
-
-            @Override
-            protected @Nullable String editItem(String o) {
-                return null;
-            }
-
-        };
     }
 
     public JComponent getContent() {
         return patcherWindowContent;
+    }
+
+    /**
+     * 初始化保存文件的面板
+     */
+    private void initializationSaveFilesPanel() {
+        // 创建 ToolbarDecorator，并设置添加、编辑和删除操作
+        ToolbarDecorator decorator = ToolbarDecorator.createDecorator(PatcherUtils.getSaveFilesTree());
+        decorator.setAddAction(anActionButton -> {
+            // 处理添加操作
+        });
+        decorator.setEditAction(anActionButton -> {
+            // 处理编辑操作
+        });
+        decorator.setRemoveAction(anActionButton -> {
+            // 处理删除操作
+        });
+
+        saveFilesPanel.add(decorator.createPanel(), BorderLayout.CENTER);
     }
 }
 

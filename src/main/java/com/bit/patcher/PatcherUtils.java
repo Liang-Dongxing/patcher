@@ -8,6 +8,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.ui.treeStructure.Tree;
 
 import java.io.File;
 
@@ -19,9 +20,33 @@ import java.io.File;
  */
 public class PatcherUtils {
 
-    public static String BOOTINF = "(SpringBoot) BOOT-INF";
-    public static String WEBINF = "(Web) WEB-INF";
+    private static final String BOOTINF = "(SpringBoot) BOOT-INF";
+    private static final String WEBINF = "(Web) WEB-INF";
+    private final static Tree SAVE_FILES_TREE = new Tree();
+    private static PatcherToolWindow patcherToolWindow;
 
+    static {
+        // 设置树的根节点是否显示
+        SAVE_FILES_TREE.setRootVisible(false);
+    }
+
+    /**
+     * 获取PatcherToolWindow
+     *
+     * @return PatcherToolWindow
+     */
+    public static PatcherToolWindow getPatcherToolWindow() {
+        return PatcherUtils.patcherToolWindow;
+    }
+
+    /**
+     * 设置PatcherToolWindow
+     *
+     * @param patcherToolWindow PatcherToolWindow
+     */
+    public static void setPatcherToolWindow(PatcherToolWindow patcherToolWindow) {
+        PatcherUtils.patcherToolWindow = patcherToolWindow;
+    }
 
     /**
      * 把模块添加到模块的下拉框
@@ -93,11 +118,32 @@ public class PatcherUtils {
         // chooseMultiple    控制是否可以选择多个文件
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false, true, false, false, false, false);
         // TextFieldWithBrowseButton 添加文件夹选择监听
-        textFieldWithBrowseButton.addBrowseFolderListener(
-                PatcherBundle.message("patcher.value.2"),
-                "",
-                project,
-                fileChooserDescriptor);
+        textFieldWithBrowseButton.addBrowseFolderListener(PatcherBundle.message("patcher.value.2"), "", project, fileChooserDescriptor);
     }
 
+    /**
+     * 获取保存文件的树
+     *
+     * @return 保存文件的树
+     */
+    public static Tree getSaveFilesTree() {
+        return SAVE_FILES_TREE;
+    }
+
+    /**
+     * 打开指定节点
+     *
+     * @param tree          树
+     * @param startingIndex 起始索引
+     * @param rowCount      行数
+     */
+    public static void expandAllNodes(Tree tree, int startingIndex, int rowCount) {
+        for (int i = startingIndex; i < rowCount; ++i) {
+            tree.expandRow(i);
+        }
+
+        if (tree.getRowCount() != rowCount) {
+            expandAllNodes(tree, rowCount, tree.getRowCount());
+        }
+    }
 }
