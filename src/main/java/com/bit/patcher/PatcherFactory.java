@@ -33,6 +33,14 @@ public class PatcherFactory implements ToolWindowFactory {
         PatcherUtils.setLibraryComboBox(project, patcherToolWindow.getModuleTypeComboBox());
         PatcherUtils.setDavePathDefault(patcherToolWindow.getSavePathTextFieldWithBrowseButton());
         PatcherUtils.setBrowseFolderListener(project, patcherToolWindow.getSavePathTextFieldWithBrowseButton());
+        PatcherUtils.exportFile(project,
+                patcherToolWindow.getSavePathTextFieldWithBrowseButton(),
+                patcherToolWindow.getModuleTypeComboBox(),
+                patcherToolWindow.getExportTheSourceCodeJbCheckBox(),
+                patcherToolWindow.getDeleteOldPatcherFilesJbCheckBox(),
+                patcherToolWindow.getExportButton());
+        PVFUtils.getVirtualFilesMap().clear();
+        PVFUtils.removeAllChildren();
         // 创建工具窗口内容
         ContentFactory contentFactory = ContentFactory.getInstance();
         Content content = contentFactory.createContent(patcherToolWindow.getContent(), PatcherBundle.message("patcher.display.name"), false);
@@ -59,4 +67,5 @@ public class PatcherFactory implements ToolWindowFactory {
     public @Nullable Icon getIcon() {
         return ToolWindowFactory.super.getIcon();
     }
+
 }

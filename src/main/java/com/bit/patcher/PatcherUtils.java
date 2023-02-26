@@ -3,14 +3,31 @@ package com.bit.patcher;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.CompilerModuleExtension;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.treeStructure.Tree;
 
+import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * @author Liang
@@ -22,13 +39,8 @@ public class PatcherUtils {
 
     private static final String BOOTINF = "(SpringBoot) BOOT-INF";
     private static final String WEBINF = "(Web) WEB-INF";
-    private final static Tree SAVE_FILES_TREE = new Tree();
     private static PatcherToolWindow patcherToolWindow;
 
-    static {
-        // 设置树的根节点是否显示
-        SAVE_FILES_TREE.setRootVisible(false);
-    }
 
     /**
      * 获取PatcherToolWindow
@@ -38,6 +50,7 @@ public class PatcherUtils {
     public static PatcherToolWindow getPatcherToolWindow() {
         return PatcherUtils.patcherToolWindow;
     }
+
 
     /**
      * 设置PatcherToolWindow
@@ -71,24 +84,25 @@ public class PatcherUtils {
      * @param project            项目
      * @param moduleTypeComboBox 项目类型的下拉框
      */
-    public static void setLibraryComboBox(Project project, ComboBox<String> moduleTypeComboBox) {
+    public static void setLibraryComboBox(Project project, ComboBox<PatcherModuleType> moduleTypeComboBox) {
+        moduleTypeComboBox.addItem(PatcherModuleType.builder().name("Spring Framework").type("BOOT-INF").build());
+        moduleTypeComboBox.addItem(PatcherModuleType.builder().name("Java EE").type("WEB-INF").build());
+        moduleTypeComboBox.addItem(PatcherModuleType.builder().name("Java SE").type("").build());
         // 根据项目获取依赖库
         Library[] libraries = LibraryTablesRegistrar.getInstance().getLibraryTable(project).getLibraries();
         for (Library library : libraries) {
-            String name = library.getName();
-            assert name != null;
-            if (name.contains("spring-boot")) {
-                moduleTypeComboBox.addItem(BOOTINF);
-                break;
+            if (Objects.requireNonNull(library.getName()).contains("spring-boot")) {
+                moduleTypeComboBox.setSelectedIndex(0);
+                return;
             }
         }
-        if (moduleTypeComboBox.getItemCount() == 1) {
-            moduleTypeComboBox.addItem(WEBINF);
+        for (Library library : libraries) {
+            if (Objects.requireNonNull(library.getName()).contains("spring")) {
+                moduleTypeComboBox.setSelectedIndex(1);
+                return;
+            }
         }
-        if (moduleTypeComboBox.getItemCount() == 1) {
-            moduleTypeComboBox.addItem(BOOTINF);
-        }
-
+        moduleTypeComboBox.setSelectedIndex(2);
     }
 
     /**
@@ -121,14 +135,6 @@ public class PatcherUtils {
         textFieldWithBrowseButton.addBrowseFolderListener(PatcherBundle.message("patcher.value.2"), "", project, fileChooserDescriptor);
     }
 
-    /**
-     * 获取保存文件的树
-     *
-     * @return 保存文件的树
-     */
-    public static Tree getSaveFilesTree() {
-        return SAVE_FILES_TREE;
-    }
 
     /**
      * 打开指定节点
@@ -145,5 +151,120 @@ public class PatcherUtils {
         if (tree.getRowCount() != rowCount) {
             expandAllNodes(tree, rowCount, tree.getRowCount());
         }
+    }
+
+    public static void getExportFile(Project project, VirtualFile virtualFile) {
+        if (virtualFile.isDirectory() && virtualFile.getChildren().length > 0) {
+            for (VirtualFile child : virtualFile.getChildren()) {
+                getExportFile(project, child);
+            }
+        } else {
+            // 获取当前选中的文件所属的 Module
+            Module moduleForFile = ModuleUtil.findModuleForFile(virtualFile, project);
+            // 将当前选中的文件按照 Module 分组
+            assert moduleForFile != null;
+            PatcherVirtualFile patcherVirtualFile = PatcherVirtualFile.builder().virtualFile(virtualFile).path(virtualFile.getPath()).name(virtualFile.getName()).moduleName(moduleForFile.getName()).module(moduleForFile).build();
+            PVFUtils.setVirtualFilesMapValue(patcherVirtualFile);
+        }
+    }
+
+    /**
+     * 导出补丁文件
+     *
+     * @param project                           项目
+     * @param savePathTextFieldWithBrowseButton 保存路径的文本框
+     * @param moduleTypeComboBox                项目类型的下拉框
+     * @param deleteOldPatcherFilesJbCheckBox   删除旧的补丁文件的复选框
+     * @param exportButton                      导出按钮
+     */
+    public static void exportFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<PatcherModuleType> moduleTypeComboBox, JBCheckBox exportTheSourceCodeJbCheckBox, JBCheckBox deleteOldPatcherFilesJbCheckBox, JButton exportButton) {
+        exportButton.addActionListener(e -> {
+            if (deleteOldPatcherFilesJbCheckBox.isSelected()) {
+                // 删除旧的补丁文件
+                Path path = Paths.get(savePathTextFieldWithBrowseButton.getText());
+                try (Stream<Path> walk = Files.walk(path)) {
+                    walk.sorted((p1, p2) -> -p1.compareTo(p2)).forEach(p -> {
+                        if (p.toString().contains(project.getName())) {
+                            try {
+                                Files.delete(p);
+                            } catch (IOException ex1) {
+                                throw new RuntimeException(ex1);
+                            }
+                        }
+                    });
+                } catch (IOException ex2) {
+                    throw new RuntimeException(ex2);
+                }
+            }
+            Map<String, List<PatcherVirtualFile>> virtualFilesMap = PVFUtils.getVirtualFilesMap();
+            if (exportTheSourceCodeJbCheckBox.isSelected()) {
+                virtualFilesMap.forEach((key, value) -> {
+                    value.forEach(virtualFile -> {
+                        // 如果模块名字和项目名字相同，则不需要保存模块名字
+                        String saveModulePath = project.getName().equals(virtualFile.getModule().getName()) ? "" : virtualFile.getModule().getName();
+                        // 获取保存路径/项目名/模块名/项目类型
+                        Path pm = Paths.get(savePathTextFieldWithBrowseButton.getText(), project.getName() + "-sources", saveModulePath);
+                        // 获取源码路径
+                        VirtualFile[] sourceRoots = ModuleRootManager.getInstance(virtualFile.getModule()).getSourceRoots();
+                        for (VirtualFile sourceRoot : sourceRoots) {
+                            if (virtualFile.getVirtualFile().getPath().contains(sourceRoot.getPath())) {
+                                Path savePath = Paths.get(virtualFile.getVirtualFile().getPath().replace(sourceRoot.getPath(), pm.toString()));
+                                try {
+                                    Files.createDirectories(savePath.getParent());
+                                    Files.copy(virtualFile.getVirtualFile().getInputStream(), savePath);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+            virtualFilesMap.forEach((key, value) -> {
+                value.forEach(virtualFile -> {
+                    // 如果模块名字和项目名字相同，则不需要保存模块名字
+                    String saveModulePath = project.getName().equals(virtualFile.getModule().getName()) ? "" : virtualFile.getModule().getName();
+                    // 获取保存路径/项目名/模块名/项目类型
+                    Path pm = Paths.get(savePathTextFieldWithBrowseButton.getText(), project.getName(), saveModulePath, moduleTypeComboBox.getItem().getType());
+                    // 获取编译后的路径
+                    VirtualFile compilerOutputPath = CompilerModuleExtension.getInstance(virtualFile.getModule()).getCompilerOutputPath();
+                    // 获取源码路径
+                    VirtualFile[] sourceRoots = ModuleRootManager.getInstance(virtualFile.getModule()).getSourceRoots();
+                    for (VirtualFile sourceRoot : sourceRoots) {
+                        // 判断文件是否在源码路径下
+                        if (virtualFile.getVirtualFile().getPath().contains(sourceRoot.getPath())) {
+                            // 获取源码路径下的文件路径
+                            String searchPath = virtualFile.getVirtualFile().getParent().getPath().replace(sourceRoot.getPath(), compilerOutputPath.getPath());
+                            // 获取源码路径方便查找内部类构建文件的路径
+                            String path = virtualFile.getVirtualFile().getPath().replace(sourceRoot.getPath(), compilerOutputPath.getPath()).replace(".java", ".*");
+                            // 如果项目类型是空，则保存路径为编译后的路径
+                            String classpath = moduleTypeComboBox.getItem().getType().equals("") ? compilerOutputPath.getPath() : compilerOutputPath.getParent().getPath();
+                            String savePath = searchPath.replace(classpath, pm.toString());
+                            try {
+                                Files.createDirectories(Path.of(savePath));
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            // 查找文件正则表达式
+                            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + path);
+                            try (Stream<Path> stream = Files.walk(Paths.get(searchPath))) {
+                                // 查找文件并复制到保存路径
+                                stream.filter(Files::isRegularFile).filter(matcher::matches).forEach(currentFile -> {
+                                    try {
+                                        Path file = Paths.get(savePath, currentFile.getFileName().toString());
+                                        Files.copy(currentFile, file, StandardCopyOption.REPLACE_EXISTING);
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                });
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                });
+            });
+
+        });
     }
 }
