@@ -35,6 +35,7 @@ public class PatcherFactory implements ToolWindowFactory {
         PatcherUtils.setBrowseFolderListener(project, patcherToolWindow.getSavePathTextFieldWithBrowseButton());
         PatcherUtils.exportFile(project,
                 patcherToolWindow.getSavePathTextFieldWithBrowseButton(),
+                patcherToolWindow.getModuleNameComboBox(),
                 patcherToolWindow.getModuleTypeComboBox(),
                 patcherToolWindow.getExportTheSourceCodeJbCheckBox(),
                 patcherToolWindow.getDeleteOldPatcherFilesJbCheckBox(),

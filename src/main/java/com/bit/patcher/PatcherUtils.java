@@ -177,7 +177,7 @@ public class PatcherUtils {
      * @param deleteOldPatcherFilesJbCheckBox   删除旧的补丁文件的复选框
      * @param exportButton                      导出按钮
      */
-    public static void exportFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<PatcherModuleType> moduleTypeComboBox, JBCheckBox exportTheSourceCodeJbCheckBox, JBCheckBox deleteOldPatcherFilesJbCheckBox, JButton exportButton) {
+    public static void exportFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<String> moduleNameComboBox, ComboBox<PatcherModuleType> moduleTypeComboBox, JBCheckBox exportTheSourceCodeJbCheckBox, JBCheckBox deleteOldPatcherFilesJbCheckBox, JButton exportButton) {
         exportButton.addActionListener(e -> {
             if (deleteOldPatcherFilesJbCheckBox.isSelected()) {
                 // 删除旧的补丁文件
@@ -223,7 +223,8 @@ public class PatcherUtils {
             virtualFilesMap.forEach((key, value) -> {
                 value.forEach(virtualFile -> {
                     // 如果模块名字和项目名字相同，则不需要保存模块名字
-                    String saveModulePath = project.getName().equals(virtualFile.getModule().getName()) ? "" : virtualFile.getModule().getName();
+                    String modelName = moduleNameComboBox.getItem().equals(PatcherBundle.message("patcher.value.1")) ? virtualFile.getModule().getName() : moduleNameComboBox.getItem();
+                    String saveModulePath = project.getName().equals(modelName) ? "" : modelName;
                     // 获取保存路径/项目名/模块名/项目类型
                     Path pm = Paths.get(savePathTextFieldWithBrowseButton.getText(), project.getName(), saveModulePath, moduleTypeComboBox.getItem().getType());
                     // 获取编译后的路径
