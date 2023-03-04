@@ -15,23 +15,17 @@ vulnerabilities, fix errors, and enhance functionality.
 [Plugin Address](https://plugins.jetbrains.com/plugin/12604-patcher)
 
 1. Open IntelliJ IDEA and select the `File` option from the menu bar.
-
 2. From the drop-down menu, select `Settings`.
-
 3. In the Settings window, select the `Plugins` option.
-
 4. In the `Plugins` tab, you can see a search box, enter the name `patcher`.
-
 5. In the search results, find the plugin you want to install and click the `Install` button on the right.
-
-Once the installation is complete, you may need to restart IntelliJ IDEA for the plugin to take effect. If so, a dialog
-box will prompt you to restart IntelliJ IDEA.
+6. Once the installation is complete, you may need to restart IntelliJ IDEA for the plugin to take effect. If so, a
+   dialog box will prompt you to restart IntelliJ IDEA.
 
 ## User Guide:
 
 1. Open IntelliJ IDEA, right-click the folder or multiple files you want to package in the project window, Git window,
    or other file directory window, and select the `Create Patcher` option.
-
 2. In the opened ToolWindow window, modify the module type, module name, and save path for the multiple files you
    selected for packaging, and then click the `Export` button.
 
