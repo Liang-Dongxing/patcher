@@ -12,6 +12,8 @@ vulnerabilities, fix errors, and enhance functionality.
 
 ### Installing the Plugin in IntelliJ IDEA:
 
+[Plugin Address](https://plugins.jetbrains.com/plugin/12604-patcher)
+
 1. Open IntelliJ IDEA and select the `File` option from the menu bar.
 
 2. From the drop-down menu, select `Settings`.

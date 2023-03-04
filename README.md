@@ -8,6 +8,8 @@ Java补丁文件的提取打包是指将Java应用程序的修改或更新打包
 
 ### idea安装插件
 
+[插件地址](https://plugins.jetbrains.com/plugin/12604-patcher)
+
 1.打开 IntelliJ IDEA，选择菜单栏上的 `File` 选项。
 
 2.从下拉菜单中选择 `Settings`。
