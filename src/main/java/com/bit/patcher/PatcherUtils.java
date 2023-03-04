@@ -280,7 +280,7 @@ public class PatcherUtils {
                             modelName.append(moduleNameComboBox.getItem());
                         }
                     }
-                    default ->
+                    default -> modelName.append("");
                 }
                 // 获取保存路径/项目名/模块名/项目类型
                 Path pm = Paths.get(savePathTextFieldWithBrowseButton.getText(), project.getName(), modelName.toString(), moduleTypeComboBox.getItem().getType());
