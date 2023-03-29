@@ -6,6 +6,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.libraries.Library;
@@ -274,7 +275,7 @@ public class PatcherUtils {
                     case "BOOT-INF", "WEB-INF" -> {
                         if (moduleNameComboBox.getItem().equals(PatcherBundle.message("patcher.value.1"))) {
                             modelName.append(virtualFile.getModule().getName());
-                        } else if (virtualFile.getModule().getModuleNioFile().getParent().equals(Paths.get(project.getBasePath()))) {
+                        } else if (ProjectUtil.guessModuleDir(virtualFile.getModule()).getParent().equals(Paths.get(project.getBasePath()))) {
                         } else if (project.getName().equals(moduleNameComboBox.getItem())) {
                         } else {
                             modelName.append(moduleNameComboBox.getItem());

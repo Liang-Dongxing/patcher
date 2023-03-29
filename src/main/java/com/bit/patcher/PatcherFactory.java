@@ -2,14 +2,10 @@ package com.bit.patcher;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 
 /**
  * @author Liang
@@ -57,16 +53,6 @@ public class PatcherFactory implements ToolWindowFactory {
     @Override
     public boolean shouldBeAvailable(@NotNull Project project) {
         return ToolWindowFactory.super.shouldBeAvailable(project);
-    }
-
-    @Override
-    public @Nullable ToolWindowAnchor getAnchor() {
-        return ToolWindowFactory.super.getAnchor();
-    }
-
-    @Override
-    public @Nullable Icon getIcon() {
-        return ToolWindowFactory.super.getIcon();
     }
 
 }
