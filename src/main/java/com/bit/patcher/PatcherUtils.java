@@ -190,6 +190,7 @@ public class PatcherUtils {
                 CompilerManager.getInstance(project).make((aborted, errors, warnings, compileContext) -> {
                     if (errors == 0) {
                         exportClassFile(project, savePathTextFieldWithBrowseButton, moduleNameComboBox, moduleTypeComboBox);
+                        PatcherNotificationUtils.successNotification(savePathTextFieldWithBrowseButton.getText());
                     }
                 });
             }

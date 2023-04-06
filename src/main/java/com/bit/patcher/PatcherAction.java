@@ -24,7 +24,7 @@ public class PatcherAction extends AnAction {
         // 获取工具窗口管理器
         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(Objects.requireNonNull(anActionEvent.getProject()));
         // 获取指定的工具窗口
-        ToolWindow toolWindow = toolWindowManager.getToolWindow(PatcherBundle.message("patcher.name"));
+        ToolWindow toolWindow = toolWindowManager.getToolWindow(PatcherBundle.message("toolwindow.stripe.Patcher"));
         // 显示或隐藏工具窗口
         assert toolWindow != null;
         if (!toolWindow.isVisible()) {
