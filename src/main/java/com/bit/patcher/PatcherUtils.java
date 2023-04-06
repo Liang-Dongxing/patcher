@@ -295,7 +295,7 @@ public class PatcherUtils {
                         // 获取源码路径下的文件路径
                         String searchPath = virtualFile.getVirtualFile().getParent().getPath().replace(sourceRoot.getPath(), compilerOutputPath.getPath());
                         // 获取源码路径方便查找内部类构建文件的路径
-                        String path = virtualFile.getVirtualFile().getPath().replace(sourceRoot.getPath(), compilerOutputPath.getPath()).replace(".java", ".*");
+                        String path = virtualFile.getVirtualFile().getPath().replace(sourceRoot.getPath(), compilerOutputPath.getPath()).replace(".java", "*");
                         // 如果项目类型是空，则保存路径为编译后的路径
                         String classpath = moduleTypeComboBox.getItem().getType().equals("") ? compilerOutputPath.getPath() : compilerOutputPath.getParent().getPath();
                         String savePath = searchPath.replace(classpath, pm.toString());
