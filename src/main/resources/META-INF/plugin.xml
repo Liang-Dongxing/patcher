@@ -17,6 +17,10 @@
         <![CDATA[ Java patch file extraction packaging refers to packaging modifications or updates in Java applications into a file for use when updates or fixes are needed. This process usually involves extracting modifications from existing Java applications and packaging them into an executable patch file for updating or repairing existing programs. This process is essential to keep the application running properly, because it can solve security vulnerabilities, fix errors, and enhance features. ]]></description>
     <change-notes>
         <![CDATA[
+        <h2>2023.2</h2>
+        <ul>
+          <li>兼容新版本。</li>
+        </ul>
         <h2>2023.1</h2>
         <ul>
           <li>兼容新版本。</li>

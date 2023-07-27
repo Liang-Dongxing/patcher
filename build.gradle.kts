@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.bit"
-version = "2023.1"
+version = "2023.2"
 
 repositories {
     mavenCentral()
@@ -13,7 +13,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2023.1")
+    version.set("2023.2")
     type.set("IU") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.java"))
