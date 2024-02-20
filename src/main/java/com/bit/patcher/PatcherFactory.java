@@ -5,7 +5,9 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Liang
@@ -16,9 +18,10 @@ import org.jetbrains.annotations.NotNull;
  * 工具窗口工厂类
  */
 public class PatcherFactory implements ToolWindowFactory {
+    @Nullable
     @Override
-    public boolean isApplicable(@NotNull Project project) {
-        return ToolWindowFactory.super.isApplicable(project);
+    public Object isApplicableAsync(@NotNull Project project, @NotNull Continuation<? super Boolean> $completion) {
+        return ToolWindowFactory.super.isApplicableAsync(project, $completion);
     }
 
     @Override

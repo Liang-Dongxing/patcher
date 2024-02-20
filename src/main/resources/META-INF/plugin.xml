@@ -7,6 +7,10 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>Patcher</name>
 
+    <version>2024.1</version>
+    
+    <idea-version since-build="233"/>
+
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="liangdongxing.cn@outlook.com" url="https://github.com/Liang-Dongxing">LiangDongXing</vendor>
 
@@ -17,6 +21,10 @@
         <![CDATA[ Java patch file extraction packaging refers to packaging modifications or updates in Java applications into a file for use when updates or fixes are needed. This process usually involves extracting modifications from existing Java applications and packaging them into an executable patch file for updating or repairing existing programs. This process is essential to keep the application running properly, because it can solve security vulnerabilities, fix errors, and enhance features. ]]></description>
     <change-notes>
         <![CDATA[
+        <h2>2024.1</h2>
+        <ul>
+          <li>兼容新版本。</li>
+        </ul>
         <h2>2023.2</h2>
         <ul>
           <li>兼容新版本。</li>
@@ -38,7 +46,6 @@
     </change-notes>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
-    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
 
     <resource-bundle>messages.PatcherBundle</resource-bundle>

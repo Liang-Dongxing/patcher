@@ -1,10 +1,10 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.17.1"
 }
 
 group = "com.bit"
-version = "2023.2"
+version = "2024.1"
 
 repositories {
     mavenCentral()
@@ -13,7 +13,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2023.2")
+    version.set("2023.3")
     type.set("IU") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.java"))
@@ -27,8 +27,7 @@ tasks {
     }
 
     patchPluginXml {
-        // https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html#tasks-patchpluginxml-sincebuild
-        sinceBuild.set("231")
+        // https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
     }
 
     signPlugin {
@@ -48,6 +47,6 @@ tasks {
 
 
 dependencies {
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
 }
