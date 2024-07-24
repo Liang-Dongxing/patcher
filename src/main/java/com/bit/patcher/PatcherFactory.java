@@ -38,7 +38,7 @@ public class PatcherFactory implements ToolWindowFactory {
                 patcherToolWindow.getModuleTypeComboBox(),
                 patcherToolWindow.getExportTheSourceCodeJbCheckBox(),
                 patcherToolWindow.getDeleteOldPatcherFilesJbCheckBox(),
-                patcherToolWindow.getExportButton());
+                patcherToolWindow.getExportButton(), patcherToolWindow.getWebappNameText());
         PVFUtils.getVirtualFilesMap().clear();
         PVFUtils.removeAllChildren();
         // 创建工具窗口内容

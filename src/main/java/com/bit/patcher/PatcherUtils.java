@@ -180,7 +180,7 @@ public class PatcherUtils {
      * @param deleteOldPatcherFilesJbCheckBox   删除旧的补丁文件的复选框
      * @param exportButton                      导出按钮
      */
-    public static void exportFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<String> moduleNameComboBox, ComboBox<PatcherModuleType> moduleTypeComboBox, JBCheckBox exportTheSourceCodeJbCheckBox, JBCheckBox deleteOldPatcherFilesJbCheckBox, JButton exportButton) {
+    public static void exportFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<String> moduleNameComboBox, ComboBox<PatcherModuleType> moduleTypeComboBox, JBCheckBox exportTheSourceCodeJbCheckBox, JBCheckBox deleteOldPatcherFilesJbCheckBox, JButton exportButton, JTextField webNameText) {
         exportButton.addActionListener(e -> {
             Map<String, List<PatcherVirtualFile>> virtualFilesMap = PVFUtils.getVirtualFilesMap();
             if (virtualFilesMap.size() > 0) {
@@ -189,7 +189,7 @@ public class PatcherUtils {
                 // 编译项目
                 CompilerManager.getInstance(project).make((aborted, errors, warnings, compileContext) -> {
                     if (errors == 0) {
-                        exportClassFile(project, savePathTextFieldWithBrowseButton, moduleNameComboBox, moduleTypeComboBox);
+                        exportClassFile(project, savePathTextFieldWithBrowseButton, moduleNameComboBox, moduleTypeComboBox, webNameText);
                         PatcherNotificationUtils.successNotification(savePathTextFieldWithBrowseButton.getText());
                     }
                 });
@@ -266,7 +266,7 @@ public class PatcherUtils {
      * @param moduleNameComboBox                模块名字的下拉框
      * @param moduleTypeComboBox                模块类型的下拉框
      */
-    private static void exportClassFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<String> moduleNameComboBox, ComboBox<PatcherModuleType> moduleTypeComboBox) {
+    private static void exportClassFile(Project project, TextFieldWithBrowseButton savePathTextFieldWithBrowseButton, ComboBox<String> moduleNameComboBox, ComboBox<PatcherModuleType> moduleTypeComboBox, JTextField webNameText) {
         Map<String, List<PatcherVirtualFile>> virtualFilesMap = PVFUtils.getVirtualFilesMap();
         virtualFilesMap.forEach((key, value) -> {
             value.forEach(virtualFile -> {
@@ -323,15 +323,17 @@ public class PatcherUtils {
                     }
                 }
                 // 获取Web资源路径
-                if (StringUtil.toLowerCase(virtualFile.getPath()).contains("webapp")) {
-                    Path savePath = Path.of(pm.getParent().toString(), virtualFile.getPath().replaceAll(".*webapp", ""));
+                String[] webNameArr = webNameText.getText().split(",");
+                for (String webName : webNameArr) {
+                if (virtualFile.getPath().contains(webName)) {
+                    Path savePath = Path.of(pm.getParent().toString(), virtualFile.getPath().replaceAll(".*"+webName, ""));
                     try {
                         Files.createDirectories(savePath.getParent());
                         Files.copy(virtualFile.getVirtualFile().getInputStream(), savePath);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
-                }
+                }}
             });
         });
     }
