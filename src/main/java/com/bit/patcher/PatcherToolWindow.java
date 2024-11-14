@@ -41,6 +41,8 @@ public class PatcherToolWindow {
     private JBCheckBox exportTheSourceCodeJbCheckBox;
     private JBCheckBox deleteOldPatcherFilesJbCheckBox;
     private JButton exportButton;
+    private JPanel webNamePanel;
+    private JTextField WebappNameText;
     private final Project project;
     private final ToolWindow toolWindow;
 
